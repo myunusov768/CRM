@@ -1,13 +1,9 @@
 ﻿using CrmAppNew.Enums;
 using CrmAppNew.Model;
-using System;
-/*2.) В CRM требуется добавить возможность получать статистику:
 
- - Кол-во пользователей которых принял модератор.
- - Кол-во пользовтелей которым было отказано в регистрации и причина отказа.*/
 namespace CrmAppNew.ManagerCrm
 {
-    sealed class StatisticService
+    public sealed class StatisticService
     {
         private readonly List<User> _users;
         public StatisticService(List<User> users) { _users = users; }
@@ -27,22 +23,37 @@ namespace CrmAppNew.ManagerCrm
 
         
 
-        public void CalculationStatistic()
+        public Result<bool> CalculationStatistic()
         {
-            if(_users != null)
+            if (_users != null)
+            {
                 foreach (var user in _users)
                 {
                     if (user.moderatorCheck.Equals(ModeratorCheckType.Accept))
                         _countAcceptUsers++;
                     else if (user.moderatorCheck.Equals(ModeratorCheckType.NotAccept))
                         _countNotAcceptUsers++;
-                    else if (user.moderatorCheck.Equals(ModeratorCheckType.Pending))
-                        _countPendingUsers++;
                     else
-                        throw new Exception("Oooops:(");
+                        _countPendingUsers++;
                 }
-            else
-                throw new ArgumentNullException(nameof(_users));
+                var result = new Result<bool>() 
+                { 
+                    IsSuccessfully = true, 
+                    Message = "sheet parsed", 
+                    Payload = true 
+                };
+                return result;
+            }
+            else 
+            {
+                var result = new Result<bool>() 
+                { 
+                    Error = Error.SheetIsEmpty, 
+                    IsSuccessfully = false, 
+                    Message = "The sheet you want to analyze is empty!" 
+                };
+                return result;
+            }
         }
     }
 }

@@ -10,7 +10,7 @@ namespace CrmAppNew.Model
 {
     sealed public record class User
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string Middlename { get; set; } = string.Empty;

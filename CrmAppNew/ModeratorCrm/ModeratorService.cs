@@ -4,36 +4,77 @@ using CrmAppNew.Model;
 
 namespace CrmAppNew.ModeratorCrm
 {
-    sealed class ModeratorService
+    public sealed class ModeratorService: AbstractUser
     {
         private readonly List<User> _users;
         public ModeratorService(List<User> users) { _users = users; }
-        private int _id;
-        private int CreateID() => _id++;
-        public void CreateModerator(CreateUserDto _createUserDto)
+        public override Result<bool> СreateUser(CreateUserDto createUserDto)
         {
-            if (_createUserDto == null)
-                throw new ArgumentNullException();
-            else if (_users.FirstOrDefault(x => x.Login.Equals(_createUserDto.Login) && x.UserRoll.Equals(UserRoll.Moderator)) != null)
-                throw new Exception("Пользователь с таким логен и пароль уже существует!\n");
+            var user = _users.FirstOrDefault(x => x.Login != createUserDto.Login && x.Password != createUserDto.Password);
+            if (createUserDto is null)
+            {
+                var result = new Result<bool>()
+                {
+                    Error = Error.InputParameterIsEmpty,
+                    IsSuccessfully = false,
+                    Message = "The user you want to create is empty!",
+                    Payload = false
+                };
+                return result;
+            }
+            else if (user != null && user.Login.Equals(createUserDto.Login))
+            {
+
+                var result = new Result<bool>()
+                {
+                    Error = Error.ThisLoginIsAlreadyTaken,
+                    IsSuccessfully = false,
+                    Message = "Login is already taken!",
+                    Payload = false
+                };
+                return result;
+            }
             else
+            {
                 _users.Add(new User()
                 {
-                    FirstName = _createUserDto.FirstName,
-                    LastName = _createUserDto.LastName,
-                    Middlename = _createUserDto.Middlename,
-                    DateOfBirth = _createUserDto.DateOfBirth,
-                    Login = _createUserDto.Login,
-                    Password = _createUserDto.Password,
+                    Id = Guid.NewGuid(),
+                    FirstName = createUserDto.FirstName,
+                    LastName = createUserDto.LastName,
+                    Middlename = createUserDto.Middlename,
+                    DateOfBirth = createUserDto.DateOfBirth,
+                    Login = createUserDto.Login,
+                    Password = createUserDto.Password,
                     UserRoll = UserRoll.Moderator,
-                    Id = CreateID()
                 });
+                var result = new Result<bool>()
+                {
+                    IsSuccessfully = true,
+                    Message = "User successfully created!",
+                    Payload = true
+                };
+                return result;
+            }
         }
-        public bool UpdateModerator(CreateUserDto createUserDto, string loginUser, string passwordUser)
+        public override Result<bool> UserDataChange(CreateUserDto createUserDto, Guid userId)
         {
-            var user = _users.FirstOrDefault(x => x.Login.Equals(loginUser) && x.Password.Equals(passwordUser) && x.UserRoll.Equals(UserRoll.Moderator));
-            if (createUserDto == null || user == null)
-                return false;
+            var user = _users.FirstOrDefault(x => x.Id.Equals(userId));
+            if (createUserDto is null)
+            {
+                var result = new Result<bool>()
+                {
+                    Error = Error.InputParameterIsEmpty,
+                    IsSuccessfully = false,
+                    Message = "The data user you want to update is empty!",
+                    Payload = false
+                };
+                return result;
+            }
+            else if (user is null)
+            {
+                var result = new Result<bool>() { Error = Error.UserIsNotFound, IsSuccessfully = false, Message = "User's not found:(!", Payload = false };
+                return result;
+            }
             else
             {
                 user.FirstName = createUserDto.FirstName;
@@ -42,43 +83,106 @@ namespace CrmAppNew.ModeratorCrm
                 user.DateOfBirth = createUserDto.DateOfBirth;
                 user.Login = createUserDto.Login;
                 user.Password = createUserDto.Password;
-                return true;
+                var result = new Result<bool>() { IsSuccessfully = true, Message = "User successfully found and change!", Payload = true };
+                return result;
             }
         }
-        public User OpenProfileModer(string loginUser, string passwordUser)
+        public override Result<User> OpenProfile(string loginUser, string passwordUser)
         {
-            var admin = _users.FirstOrDefault(x => x.Login.Equals(loginUser) && x.Password.Equals(passwordUser)
+            var moderator = _users.FirstOrDefault(x => x.Login.Equals(loginUser) && x.Password.Equals(passwordUser)
             && x.UserRoll.Equals(UserRoll.Moderator));
-
-            if (admin != null)
-                return admin;
+            if (moderator == null)
+            {
+                var result = new Result<User>()
+                {
+                    Error = Error.UserIsNotFound,
+                    IsSuccessfully = false,
+                    Message = "User's not found:(!"
+                };
+                return result;
+            }
             else
-                throw new Exception("User's not find:(\n");
+            {
+                var result = new Result<User>()
+                {
+                    IsSuccessfully = true,
+                    Message = "User successfully found!",
+                    Payload = moderator
+                };
+                return result;
+            }
         }
-        public void DeleteModer(string loginUser, string passwordUser)
+        public override Result<bool> DeleteUser(Guid userId)
         {
-            var user = _users.FirstOrDefault(x => x.Login.Equals(loginUser)
-            && x.Password.Equals(passwordUser) && x.UserRoll.Equals(UserRoll.Moderator) && x.moderatorCheck.Equals(ModeratorCheckType.Accept));
-            if (user == null)
-                throw new Exception("User's not find:(");
+            var user = _users.FirstOrDefault(x => x.Id.Equals(userId));
+            if (user is null)
+            {
+                var result = new Result<bool>()
+                {
+                    Error = Error.UserIsNotFound,
+                    IsSuccessfully = false,
+                    Message = "User's not found:(!",
+                    Payload = false
+                };
+                return result;
+            }
             else
+            {
                 _users.Remove(user);
+                var result = new Result<bool>() { IsSuccessfully = true, Message = "User deleted successfully!", Payload = true };
+                return result;
+            }
+                
         }
-        public void ModeratorServiceCheck (string login, ModeratorCheckType checkType, string comment) 
+        public Result<bool> ModeratorServiceCheck (Guid userId, ModeratorCheckType checkType, string comment) 
         {
-            var user = _users.FirstOrDefault(x=> x.Login.Equals(login) && x.moderatorCheck.Equals(ModeratorCheckType.Pending));
-            
-            if(user == null)
-                throw new Exception("User's not find:(\n");
-            else if(checkType.Equals(ModeratorCheckType.NotAccept))
+            var user = _users.FirstOrDefault(x => x.Id.Equals(userId));
+            if (user is null)
+            {
+                var result = new Result<bool>()
+                {
+                    Error = Error.UserIsNotFound,
+                    IsSuccessfully = false,
+                    Message = "User's not found:(!",
+                    Payload = false
+                };
+                return result;
+            }
+            else if (checkType.Equals(ModeratorCheckType.NotAccept))
             {
                 user.moderatorCheck = ModeratorCheckType.NotAccept;
                 user.Сomment = comment;
+                var result = new Result<bool>()
+                {
+                    Error = Error.ModeratorDidNotAcceptYourRequest,
+                    IsSuccessfully = false,
+                    Message = "The moderator did not accept your request!",
+                    Payload = false
+                };
+                return result;
             }
-            else if(checkType.Equals(ModeratorCheckType.Accept)) 
+            else if (checkType.Equals(ModeratorCheckType.Accept))
             {
                 user.moderatorCheck = ModeratorCheckType.Accept;
                 user.Сomment = comment;
+                var result = new Result<bool>()
+                {
+                    IsSuccessfully = true,
+                    Message = "Moderator accepted your request!",
+                    Payload = true
+                };
+                return result;
+            }
+            else
+            {
+                var result = new Result<bool>()
+                {
+                    Error = Error.OtherErrors,
+                    IsSuccessfully = false,
+                    Message = "Other errors!",
+                    Payload = false
+                };
+                return result;
             }
         }
     }

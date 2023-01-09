@@ -6,8 +6,8 @@ namespace CrmAppNew.Model
 {
     sealed public class Loan
     {
-        public int Id { get; set; }
-        public User User { get; set; } = new User();
+        public Guid Id { get; set; }
+        public Guid UserId { get; set; }
         public DateTime DateLoan { get; set; }
         public DateTime RepaymentDate { get; set; }
         public int LoanAmount { get; set; }

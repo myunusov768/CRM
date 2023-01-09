@@ -1,90 +1,92 @@
-﻿using CrmAppNew.UserCrm;
-using CrmAppNew.DTO;
+﻿using CrmAppNew.DTO;
 using CrmAppNew.Enums;
 using CrmAppNew.Model;
 using System.Collections;
 
 namespace CrmAppNew.AdminCrm
 {
-    sealed class AdminService
+    public sealed class AdminService: AbstractUser
     {
         private readonly List<User> _users;
-        public AdminService(List<User> users) 
+        public AdminService(List<User> users) { _users = users; }
+        public override Result<bool> СreateUser(CreateUserDto createUserDto)
         {
-            _users = users;
-        }
-        private int _id;
-        private int CreateID() => _id++;
-        public void CreateAdmin(CreateUserDto _createUserDto)
-        {
-            if (_createUserDto == null)
-                throw new ArgumentNullException();
-            else if(_users.FirstOrDefault(x => x.Login.Equals(_createUserDto.Login) && x.UserRoll.Equals(UserRoll.Admin)) != null)
-                throw new Exception("Пользователь с таким логен и пароль уже существует!\n");
-            else
-                _users.Add(new User()
-                {
-                    FirstName = _createUserDto.FirstName,
-                    LastName = _createUserDto.LastName,
-                    Middlename = _createUserDto.Middlename,
-                    DateOfBirth = _createUserDto.DateOfBirth,
-                    Login = _createUserDto.Login,
-                    Password = _createUserDto.Password,
-                    UserRoll = UserRoll.Admin,
-                    Id = CreateID()
-                });
-        }
-        
-        public bool UpdateAdmin(CreateUserDto createUserDto, string loginUser, string passwordUser)
-        {
-            var user = _users.FirstOrDefault(x => x.Login.Equals(loginUser) && x.Password.Equals(passwordUser) && x.UserRoll.Equals(UserRoll.Admin));
-            if (createUserDto == null || user == null)
-                return false;
-            else
+            var user = _users.FirstOrDefault(x => x.Login != createUserDto.Login && x.Password != createUserDto.Password);
+            if (createUserDto == null)
+                return new Result<bool> { Error = Error.InputParameterIsEmpty, IsSuccessfully = false, Message = "The user you want to create is empty!", Payload = false };
+            else if (user != null && user.Login.Equals(createUserDto.Login))
+                return new Result<bool> { Error = Error.ThisLoginIsAlreadyTaken, IsSuccessfully = false, Message = "Login is already taken!", Payload = false };
+            _users.Add(new User()
             {
-                user.FirstName = createUserDto.FirstName;
-                user.LastName = createUserDto.LastName;
-                user.Middlename = createUserDto.Middlename;
-                user.DateOfBirth = createUserDto.DateOfBirth;
-                user.Login = createUserDto.Login;
-                user.Password = createUserDto.Password;
-                return true;
-            }
+                Id = Guid.NewGuid(),
+                FirstName = createUserDto.FirstName,
+                LastName = createUserDto.LastName,
+                Middlename = createUserDto.Middlename,
+                DateOfBirth = createUserDto.DateOfBirth,
+                Login = createUserDto.Login,
+                Password = createUserDto.Password,
+                UserRoll = UserRoll.Admin
+            });
+            var result = new Result<bool>()
+            { IsSuccessfully = true, Message = "User successfully created!", Payload = true };
+            return result;
         }
-        public void DeleteAdmin(string loginUser, string passwordUser)
+        public override Result<bool> UserDataChange(CreateUserDto createUserDto, Guid userId)
         {
-            var user = _users.FirstOrDefault(x => x.Login.Equals(loginUser)
-            && x.Password.Equals(passwordUser) && x.UserRoll.Equals(UserRoll.Admin) && x.moderatorCheck.Equals(ModeratorCheckType.Accept));
-            if (user == null)
-                throw new Exception("User's not find:(");
-            else
-                _users.Remove(user);
+            var user = _users.FirstOrDefault(x => x.Id.Equals(userId));
+            if (createUserDto == null)
+                return new Result<bool>()
+                { Error = Error.InputParameterIsEmpty, IsSuccessfully = false, Message = "The data user you want to update is empty!", Payload = false };
+            else if (user is null)
+                return new Result<bool>()
+                { Error = Error.UserIsNotFound, IsSuccessfully = false, Message = "User's not found:(!", Payload = false };
+            user.FirstName = createUserDto.FirstName;
+            user.LastName = createUserDto.LastName;
+            user.Middlename = createUserDto.Middlename;
+            user.DateOfBirth = createUserDto.DateOfBirth;
+            user.Login = createUserDto.Login;
+            user.Password = createUserDto.Password;
+            var result = new Result<bool>()
+            { IsSuccessfully = true, Message = "User successfully found and change!", Payload = true };
+            return result;
         }
-        public User OpenProfileAdmin(string loginUser, string passwordUser)
+        public override Result<bool> DeleteUser(Guid userId)
+        {
+            var user = _users.FirstOrDefault(x => x.Id.Equals(userId));
+            if (user is null)
+                return new Result<bool>()
+                { Error = Error.UserIsNotFound, IsSuccessfully = false, Message = "User's not found:(!", Payload = false };
+            _users.Remove(user);
+            var result = new Result<bool>() { IsSuccessfully = true, Message = "User deleted successfully!", Payload = true };
+            return result;
+        }
+        public override Result<User> OpenProfile(string loginUser, string passwordUser)
         {
             var admin = _users.FirstOrDefault(x => x.Login.Equals(loginUser) && x.Password.Equals(passwordUser)
             && x.UserRoll.Equals(UserRoll.Admin));
 
-            if (admin != null)
-                return admin;
-            else
-                throw new Exception("User's not find:(\n");
+            if (admin is null) return new Result<User>()
+            { Error = Error.UserIsNotFound, IsSuccessfully = false, Message = "User's not found:(!" };
+            
+            var result = new Result<User>()
+            { IsSuccessfully = true, Message = "User successfully found!", Payload = admin };
+            return result;
         }
-        public User GetSpecificUser(string userLogin)
+        public Result<User> GetSpecificUser(string userLogin)
         {
-            var user = _users.FirstOrDefault(user => user.Login.Equals(userLogin) && user.UserRoll.Equals(UserRoll.Admin));
-            if (user == null)
-                throw new Exception("User's not find:(\n");
-            else
-                return user;
+            var user = _users.FirstOrDefault(user => user.Login.Equals(userLogin) && user.UserRoll.Equals(UserRoll.User));
+            if (user is null) return new Result<User>()
+            { Error = Error.UserIsNotFound, IsSuccessfully = false, Message = "User's not found:(!" };
+            
+            var result = new Result<User>()
+            { IsSuccessfully = true, Message = "User successfully found!", Payload = user };
+            return result;
         }
         public IEnumerator GetAllUsers()
         {
-            foreach (var user in _users)
-            {
-                if (user.UserRoll.Equals(UserRoll.User) && user != null)
+            foreach (var user in _users) 
+                if (user.UserRoll.Equals(UserRoll.User) && _users != null)
                     yield return user;
-            }
         }
     }
 }

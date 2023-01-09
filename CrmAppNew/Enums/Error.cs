@@ -4,8 +4,19 @@ namespace CrmAppNew.Enums
 {
     public enum Error
     {
+        UserIsNotFound,
         TextIsNull,
-        MessageNotFound
-
+        MessageNotFound,
+        InputParameterIsEmpty,
+        ThisLoginIsAlreadyTaken,
+        YourRequestForConsideration,
+        YourRequestHasBeenDenied,
+        ModeratorDidNotAcceptYourRequest,
+        LoanIsNotFound,
+        SheetIsEmpty,
+        AmountZeroOrLessThanZero,
+        LimitExhausted,
+        IncomingIdIsEmpty,
+        OtherErrors
     }
 }

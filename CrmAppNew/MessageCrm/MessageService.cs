@@ -1,69 +1,68 @@
 ﻿using CrmAppNew.DTO;
 using CrmAppNew.Enums;
 using CrmAppNew.Model;
-using System;
-
 
 namespace CrmAppNew.MessageCrm
 {
     public sealed class MessageService
     {
         public readonly List<Message> _messages;
-        public MessageService(List<Message> messages) { _messages = messages; }
-        private int _id;
-        private int CreateID()=>_id++;
+        public readonly List<User> _users;
+        public MessageService(List<Message> messages, List<User> users) { _messages = messages; _users = users; }
         
-        public MessageResult<string> CreateMessage(MessageDto messageDto)
+        public Result<bool> CreateMessage(MessageDto messageDto, Guid UserId, UserRoll recipienRole)
         {
-            if (string.IsNullOrEmpty(messageDto.MessageText))
+            if (string.IsNullOrEmpty(messageDto.Text))
             {
-                var result = new MessageResult<string> { 
+                var result = new Result<bool>()
+                {
                     Error = Error.TextIsNull,
-                    IsSuccessfully = MessageStatus.Failed,
-                    Message = string.Empty, 
-                    Payload = string.Empty};
+                    IsSuccessfully = false,
+                    Message = "Text Is Null",
+                    Payload = false
+                };
                 return result;
             }
             else
             {
                 _messages.Add(new Message() { 
-                    MessageId = CreateID(),
-                    MessageText = messageDto.MessageText, 
-                    Sender = messageDto.Sender,
-                    Recipient= messageDto.Recipient,
+                    MessageId = Guid.NewGuid(),
+                    MessageText = messageDto.Text,
+                    UserId = UserId,
+                    RecipienRole = recipienRole,
                     Date = DateTime.Now });
-                var result = new MessageResult<string> { Message = messageDto.MessageText, IsSuccessfully = MessageStatus.Sent };
+                var result = new Result<bool>() { Message = "Ok", IsSuccessfully = true, Payload = true };
                 return result;
             }
         }
-        public List<Message> GetMessages(User sender, User recipient) 
-        {
-            var result = new List<Message>();
-            var _message = _messages.FirstOrDefault(x => (x.Sender.Login.Equals(sender.Login) && x.Recipient.Equals(recipient.Login)) 
-            || (x.Sender.Login.Equals(sender.Login) && x.Recipient.Equals(recipient.Login)));
-            
 
-            if (sender == null)
-                throw new Exception("User's empty!");
-            else if(_message == null)
-                throw new Exception("Message's not found!");
+        public Result<List<Message>> GetMessages(Guid userId, UserRoll recipientRole) 
+        {
+            var _list = new List<Message>();
+            var _message = _messages.FirstOrDefault(x => (x.UserId.Equals(userId) && x.RecipienRole.Equals(recipientRole)));
+            
+            if (_message == null)
+            {
+                var result = new Result<List<Message>>() {  Error = Error.SheetIsEmpty, Message = "Sheet Is Empty", IsSuccessfully = false };
+                return result;
+            }
             else
             {
                 foreach (var message in _messages)
                 {
-                    if (message.Sender.Equals(_message.Sender) && message.Recipient.Equals(_message.Recipient))
-                    result.Add(new Message()
-                    {
-                        Date = message.Date,
-                        Sender = message.Sender,
-                        Recipient = message.Recipient,
-                        MessageId = message.MessageId,
-                        MessageText = message.MessageText
-                    });
+                    if (message.UserId.Equals(userId) && message.RecipienRole.Equals(recipientRole))
+                        _list.Add(new Message()
+                        {
+                            MessageId = message.MessageId,
+                            Date = message.Date,
+                            UserId = message.UserId,
+                            RecipienRole = message.RecipienRole,
+                            MessageText = message.MessageText
+                        });
                 }
+                var result = new Result<List<Message>>() { Message = "Ok", IsSuccessfully = true, Payload = _list };
                 return result;
             }
         }
-        
     }
 }

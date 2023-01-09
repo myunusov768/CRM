@@ -4,10 +4,10 @@ namespace CrmAppNew.Model
 {
     public sealed class Message
     {
-        public int MessageId { get; set; }
+        public Guid MessageId { get; set; }
         public string MessageText { get; set; } = string.Empty;
-        public User Sender { get; set; } = new User();
-        public User Recipient { get; set; } = new User();
+        public Guid UserId { get; set; }
+        public UserRoll RecipienRole { get; set; }
         public DateTime Date { get; set; }
     }
 }
