@@ -1,0 +1,42 @@
+[33mcommit eafd77f646b6d8b3913a6e8bf94cffe373d13c24[m[33m ([m[1;36mHEAD -> [m[1;32mSalom[m[33m, [m[1;31morigin/Salom[m[33m)[m
+Merge: 19b4ac7 4c1c62f
+Author: myunusov768 <118165862+myunusov768@users.noreply.github.com>
+Date:   Tue Jan 10 00:53:12 2023 +0500
+
+    Merge branch 'Salom' of https://github.com/myunusov768/CRM into Salom
+
+[33mcommit 19b4ac76c70fc235a907f092f4a648417a5082cd[m
+Author: myunusov768 <118165862+myunusov768@users.noreply.github.com>
+Date:   Tue Jan 10 00:47:04 2023 +0500
+
+    result, message
+
+[33mcommit 4c1c62fbdbcdb6b504be41fcee8db2031c010cb1[m
+Author: myunusov768 <118165862+myunusov768@users.noreply.github.com>
+Date:   Tue Jan 10 00:47:04 2023 +0500
+
+    result, message
+
+[33mcommit e4f9509b7f2b055f4e436250e3640ec6bd17628a[m
+Author: myunusov768 <118165862+myunusov768@users.noreply.github.com>
+Date:   Tue Jan 10 00:07:08 2023 +0500
+
+    Salom
+
+[33mcommit 436eace99f61c8b360d27343e72a17ec8d5807e7[m
+Author: myunusov768 <118165862+myunusov768@users.noreply.github.com>
+Date:   Mon Jan 9 22:52:32 2023 +0500
+
+    first commit
+
+[33mcommit de5d0b94264080ea30deea0f13505c41d13b537e[m
+Author: Asus <Asus@LAPTOP-29CNCDPO>
+Date:   Mon Jan 2 18:20:05 2023 +0500
+
+    Добавьте файлы проекта.
+
+[33mcommit 6f47a9de2cc20c43e6778c3e991db692ced432a0[m
+Author: Asus <Asus@LAPTOP-29CNCDPO>
+Date:   Mon Jan 2 18:20:04 2023 +0500
+
+    Добавить .gitattributes и .gitignore.
