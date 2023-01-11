@@ -21,5 +21,6 @@ namespace CrmAppNew.Model
         public UserRoll UserRoll { get; set; }
         public string Сomment { get; set; } = string.Empty;
         public ModeratorCheckType moderatorCheck { get; set; }
+        public UserStatus UserStatus { get; set; }
     }
 }

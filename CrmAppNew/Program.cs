@@ -1,13 +1,8 @@
-﻿using CrmAppNew.UserCrm;
-using CrmAppNew.DTO;
+﻿using CrmAppNew.DTO;
 using CrmAppNew.Model;
-using CrmAppNew.AdminCrm;
-using CrmAppNew.ModeratorCrm;
-using CrmAppNew.ManagerCrm;
 using CrmAppNew.LoanCrm;
 using CrmAppNew.MessageCrm;
 using CrmAppNew.Interfaces;
-using CrmAppNew.UserCRM;
 
 namespace CrmAppNew
 {
@@ -25,8 +20,6 @@ namespace CrmAppNew
             _usersList.Add(new User() { Login = "admin", Password = "786", UserRoll = Enums.UserRoll.Admin });
             _usersList.Add(new User() { Login = "manag", Password = "786", UserRoll = Enums.UserRoll.Manager });
             _usersList.Add(new User() { Login = "moder", Password = "786", UserRoll = Enums.UserRoll.Moderator });
-
-
 
             int i = 0;
             while (i++ < 100)
@@ -155,6 +148,15 @@ namespace CrmAppNew
             else
                 throw new Exception("Password is null!");
             return password;
+        }
+        public static int AmountInput()
+        {
+            Console.Write("Amount: ");
+            string inputAmount = Console.ReadLine();
+            if (int.TryParse(inputAmount, out int amount))
+                return amount;
+            else
+                throw new Exception("Oooops:(!");
         }
         public static string MessageInput()
         {

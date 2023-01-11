@@ -46,6 +46,7 @@ namespace CrmAppNew.ModeratorCrm
                     Login = createUserDto.Login,
                     Password = createUserDto.Password,
                     UserRoll = UserRoll.Moderator,
+                    UserStatus = UserStatus.Open
                 });
                 var result = new Result<bool>()
                 {

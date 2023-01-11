@@ -1,7 +1,9 @@
-﻿using CrmAppNew.DTO;
+﻿using CrmAppNew.Abstracts;
+using CrmAppNew.DTO;
 using CrmAppNew.Enums;
 using CrmAppNew.Model;
 using System.Collections;
+using System.Transactions;
 
 namespace CrmAppNew.AdminCrm
 {
@@ -25,7 +27,8 @@ namespace CrmAppNew.AdminCrm
                 DateOfBirth = createUserDto.DateOfBirth,
                 Login = createUserDto.Login,
                 Password = createUserDto.Password,
-                UserRoll = UserRoll.Admin
+                UserRoll = UserRoll.Admin,
+                UserStatus = UserStatus.Open
             });
             var result = new Result<bool>()
             { IsSuccessfully = true, Message = "User successfully created!", Payload = true };
@@ -34,7 +37,7 @@ namespace CrmAppNew.AdminCrm
         public override Result<bool> UserDataChange(CreateUserDto createUserDto, Guid userId)
         {
             var user = _users.FirstOrDefault(x => x.Id.Equals(userId));
-            if (createUserDto == null)
+            if (createUserDto is null)
                 return new Result<bool>()
                 { Error = Error.InputParameterIsEmpty, IsSuccessfully = false, Message = "The data user you want to update is empty!", Payload = false };
             else if (user is null)
@@ -87,6 +90,60 @@ namespace CrmAppNew.AdminCrm
             foreach (var user in _users) 
                 if (user.UserRoll.Equals(UserRoll.User) && _users != null)
                     yield return user;
+        }
+
+        /*
+ - Добавить Администратору возможность:
+ - Редактировать пользователей (всех со всеми ролями).
+ - Удалять пользователей (всех со всеми ролями).
+ - Блокировать пользователям доступ в СРМ (всех со всеми ролями).
+ - Создать долг для определенного пользователя.
+ - Подтверждать этот долг.
+ - Погошать долги пользователей.*/
+
+
+
+
+        public Result<bool> ChangeStatusUser(string login, UserStatus userStatus)
+        {
+            var user = _users.FirstOrDefault(x => x.Login.Equals(login));
+            if (user is null)
+                return new Result<bool>()
+                { Error = Error.UserIsNotFound, IsSuccessfully = false, Message = "User's not found:(!", Payload = false };
+            user.UserStatus = userStatus;
+            var result = new Result<bool>()
+            { IsSuccessfully = true, Message = $"User successfully found and status changes to {userStatus}!", Payload = true };
+            return result;
+        }
+        public Result<bool> DeleteUser(string login)
+        {
+            var user = _users.FirstOrDefault(x => x.Login.Equals(login));
+            if (user is null)
+                return new Result<bool>()
+                { Error = Error.UserIsNotFound, IsSuccessfully = false, Message = "User's not found:(!", Payload = false };
+            _users.Remove(user);
+            var result = new Result<bool>()
+            { IsSuccessfully = true, Message = "User successfully found and deleted!", Payload = true };
+            return result;
+        }
+        public Result<bool> UpdateUsers(CreateUserDto createUserDto, string login)
+        {
+            var user = _users.FirstOrDefault(x => x.Login.Equals(login));
+            if (createUserDto is null)
+                return new Result<bool>()
+                { Error = Error.InputParameterIsEmpty, IsSuccessfully = false, Message = "The data user you want to update is empty!", Payload = false };
+            else if (user is null)
+                return new Result<bool>()
+                { Error = Error.UserIsNotFound, IsSuccessfully = false, Message = "User's not found:(!", Payload = false };
+            user.FirstName = createUserDto.FirstName;
+            user.LastName = createUserDto.LastName;
+            user.Middlename = createUserDto.Middlename;
+            user.DateOfBirth = createUserDto.DateOfBirth;
+            user.Login = createUserDto.Login;
+            user.Password = createUserDto.Password;
+            var result = new Result<bool>()
+            { IsSuccessfully = true, Message = "User successfully found and change!", Payload = true };
+            return result;
         }
     }
 }

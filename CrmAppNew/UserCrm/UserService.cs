@@ -41,7 +41,8 @@ namespace CrmAppNew.UserCrm
                     Login = createUserDto.Login,
                     Password = createUserDto.Password,
                     UserRoll = UserRoll.User,
-                    moderatorCheck = ModeratorCheckType.Pending
+                    moderatorCheck = ModeratorCheckType.Pending,
+                    UserStatus = UserStatus.Open
                 });
                 var result = new Result<bool>()
                 { IsSuccessfully = true, Message = "User successfully created!", Payload = true };

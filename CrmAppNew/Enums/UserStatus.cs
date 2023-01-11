@@ -1,7 +1,8 @@
 ﻿namespace CrmAppNew.Enums
 {
-    enum UserStatus
+    public enum UserStatus
     {
-        
+        Close,
+        Open
     }
 }

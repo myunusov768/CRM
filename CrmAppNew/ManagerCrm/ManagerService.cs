@@ -46,7 +46,8 @@ namespace CrmAppNew.ManagerCrm
                     DateOfBirth = createUserDto.DateOfBirth,
                     Login = createUserDto.Login,
                     Password = createUserDto.Password,
-                    UserRoll = UserRoll.Manager
+                    UserRoll = UserRoll.Manager,
+                    UserStatus = UserStatus.Open
                 });
                 var result = new Result<bool>()
                 {

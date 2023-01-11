@@ -49,7 +49,7 @@ namespace CrmAppNew.Interfaces
             {
                 if (item.LoanType.Equals(LoanType.Pending))
                 {
-                    Console.WriteLine($"FLM: {item.UserId}" +
+                    Console.WriteLine($"tranche: {item.Tranche}" +
                         $"\nDate of loan: {item.DateLoan}, Amount: {item.LoanAmount}, Loan balance {item.LoanBalance}\n");
                     
                     string command = Program.InputCommand();

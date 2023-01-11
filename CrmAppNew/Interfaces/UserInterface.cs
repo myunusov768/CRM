@@ -35,6 +35,8 @@ namespace CrmAppNew.Interfaces
                             RequestLoan(user);
                         else if (command.ToLower().Equals("loans"))
                             AllLoans(user);
+                        else if (command.ToLower().Equals("repayment loan"))
+                            RepaymentLoan(user);
                         else if (command.ToLower().Equals("messanger"))
                             ChatInterface.UserChat(user);
                         else if (command.ToLower().Equals("delete"))
@@ -56,25 +58,33 @@ namespace CrmAppNew.Interfaces
         {
             Console.WriteLine("Введите сумма кредита!");
             int amount = int.Parse(Console.ReadLine());
-            Program.loanService.CreateLoan(user.Id, amount);
+            var result = Program.loanService.CreateLoan(user.Id, amount);
+            Console.WriteLine(result.Message);
         }
         public static void AllLoans(User user)
         {
             var loans = Program.loanService.GetAllLoansUser(user.Id);
-            if (loans.IsSuccessfully)
+            if (!loans.IsSuccessfully)
                 Console.WriteLine(loans.Message);
             else
                 Console.WriteLine(loans.Payload);
         }
         public static void RepaymentLoan(User user)
         {
+            AllLoans(user);
             Console.WriteLine("Введите Id транша!");
-            Guid _id = Guid.Parse(Console.ReadLine());
+            int _id = int.Parse(Console.ReadLine());
             var loan = Program.loanService.GetSpecificLoan(_id);
-            if (loan != null)
+            if (loan.IsSuccessfully)
+            {
                 Console.Write($"Сумма: {loan.Payload.LoanAmount}");
+
+                var result = Program.loanService.RepaymentLoan(_id, Program.AmountInput());
+                Console.WriteLine(result.Message);
+            }
             else
                 Console.WriteLine("Не правельный транш!");
+            
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using CrmAppNew.Enums;
 using CrmAppNew.Model;
+using CrmAppNew.Abstracts;
 
 namespace CrmAppNew.LoanCrm
 {
@@ -7,14 +8,12 @@ namespace CrmAppNew.LoanCrm
     {
         private readonly List<Loan> _transactions;
         public LoanServise(List<Loan> loans) { _transactions = loans; }
-
-        private int _loanId = 0;
-        
-        private int SetLoanId() => _loanId++;
-        public Result<bool> RepaymentLoan(Guid idLoan, int amount)
+        private int _tranche = 0;
+        private int SetTranche() => ++_tranche;
+        public Result<bool> RepaymentLoan(int tranche, int amount)
         {
-            var loan = _transactions.FirstOrDefault(x => x.Id.Equals(idLoan));
-            if (loan == null)
+            var loan = _transactions.FirstOrDefault(x => x.Tranche.Equals(tranche));
+            if (loan is null)
             {
                 var result = new Result<bool>()
                 {
@@ -36,14 +35,28 @@ namespace CrmAppNew.LoanCrm
                 };
                 return result;
             }
-            else if (loan.LoanAmount < amount || loan.LoanAmount > amount)
+            else if (amount > loan.LoanAmount)
             {
                 var result = new Result<bool>()
                 {
                     Error = Error.OtherErrors,
                     IsSuccessfully = false,
-                    Message = $"Cумма на погашение больше чем остаток долга по кредиту, summ {loan.LoanBalance - amount}!",
+                    Message = $"Cумма на погашение больше чем остаток долга по кредиту на сумма {loan.LoanBalance - amount}!",
                     Payload = false
+                };
+                return result;
+            }
+            else if (amount >0 && amount < loan.LoanAmount)
+            {
+                loan.LoanBalance -= amount;
+                loan.LoanStatus = LoanStatus.open;
+                loan.RepaymentDate = DateTime.Now;
+                var result = new Result<bool>()
+                {
+                    Error = Error.OtherErrors,
+                    IsSuccessfully = true,
+                    Message = $"OK {loan.LoanBalance}!",
+                    Payload = true
                 };
                 return result;
             }
@@ -56,7 +69,7 @@ namespace CrmAppNew.LoanCrm
                 {
                     Error = Error.OtherErrors,
                     IsSuccessfully = true,
-                    Message = $"Cумма на погашение больше чем остаток долга по кредиту, summ {loan.LoanBalance - amount}!",
+                    Message = $"OK {loan.LoanBalance}!",
                     Payload = true
                 };
                 return result;
@@ -78,21 +91,22 @@ namespace CrmAppNew.LoanCrm
             var user = _transactions.FirstOrDefault(x => x.UserId.Equals(userId));
             if (user == null)
             {
-                _transactions.Add(new Loan() 
+                _transactions.Add(new Loan()
                 {
-                    
                     Id = Guid.NewGuid(),
-                    UserId= userId,
+                    Tranche = SetTranche(),
+                    UserId = userId,
                     LoanAmount = amountLoan,
-                    LoanBalance = amountLoan, 
-                    LoanType = LoanType.Pending, 
+                    LoanBalance = amountLoan,
+                    LoanType = LoanType.Pending,
                     DateLoan = DateTime.Now,
-                    RepaymentDate = DateTime.Now.AddMonths(1)
+                    RepaymentDate = DateTime.Now.AddMonths(1),
+                    LoanStatus= LoanStatus.open,
                 });
                 var result = new Result<bool>()
                 {
                     IsSuccessfully = true,
-                    Message = "Other Errors",
+                    Message = "Ok",
                     Payload = true
                 };
                 return result;
@@ -116,6 +130,7 @@ namespace CrmAppNew.LoanCrm
                     _transactions.Add(new Loan()
                     {
                         Id = Guid.NewGuid(),
+                        Tranche = SetTranche(),
                         UserId = userId,
                         LoanAmount = amountLoan,
                         LoanBalance = amountLoan,
@@ -140,10 +155,10 @@ namespace CrmAppNew.LoanCrm
                 }
             }
         }
-        public Result<Loan> GetSpecificLoan(Guid idLoan) 
+        public Result<Loan> GetSpecificLoan(int tranche) 
         {
-            var loan = _transactions.FirstOrDefault(x => x.Id.Equals(idLoan));
-            if (loan == null)
+            var loan = _transactions.FirstOrDefault(x => x.Tranche.Equals(tranche));
+            if (loan is null)
             {
                 var result = new Result<Loan>()
                 {
@@ -185,7 +200,7 @@ namespace CrmAppNew.LoanCrm
                     if (item.UserId.Equals(userId))
                     {
 
-                        _loansId = _loansId + $"{item.Id}, ";
+                        _loansId = _loansId + $"{item.Tranche}, ";
                     }
                 }
                 var result = new Result<string>()
@@ -199,7 +214,7 @@ namespace CrmAppNew.LoanCrm
         }
         public Result<List<Guid>> GetOverdueLoansList()
         {
-            if (_transactions == null)
+            if (_transactions is null)
             {
                 var result = new Result<List<Guid>>()
                 {

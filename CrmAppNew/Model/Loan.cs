@@ -7,6 +7,7 @@ namespace CrmAppNew.Model
     sealed public class Loan
     {
         public Guid Id { get; set; }
+        public int Tranche { get; set; }
         public Guid UserId { get; set; }
         public DateTime DateLoan { get; set; }
         public DateTime RepaymentDate { get; set; }
