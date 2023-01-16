@@ -35,7 +35,7 @@ namespace CrmAppNew
                     else if (command.ToLower().Equals("moderator"))
                         ModeratorInterface.Moderator();
                     else if (command.ToLower().Equals("manager"))
-                        AdminInterface.Admin();
+                        ManagerInterface.Manager();
                     else if (command.ToLower().Equals("exit"))
                         return;
                     else

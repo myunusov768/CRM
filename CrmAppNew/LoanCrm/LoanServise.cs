@@ -4,12 +4,11 @@ using CrmAppNew.Abstracts;
 
 namespace CrmAppNew.LoanCrm
 {
-    public sealed class LoanServise
+    public sealed class LoanServise: ILoanService
     {
         private readonly List<Loan> _transactions;
         public LoanServise(List<Loan> loans) { _transactions = loans; }
-        private int _tranche = 0;
-        private int SetTranche() => ++_tranche;
+        
         public Result<bool> RepaymentLoan(int tranche, int amount)
         {
             var loan = _transactions.FirstOrDefault(x => x.Tranche.Equals(tranche));
@@ -46,7 +45,7 @@ namespace CrmAppNew.LoanCrm
                 };
                 return result;
             }
-            else if (amount >0 && amount < loan.LoanAmount)
+            else if (amount > 0 && amount < loan.LoanAmount)
             {
                 loan.LoanBalance -= amount;
                 loan.LoanStatus = LoanStatus.open;
@@ -94,7 +93,7 @@ namespace CrmAppNew.LoanCrm
                 _transactions.Add(new Loan()
                 {
                     Id = Guid.NewGuid(),
-                    Tranche = SetTranche(),
+                    Tranche = CreateTrancheLoans.SetTranche(),
                     UserId = userId,
                     LoanAmount = amountLoan,
                     LoanBalance = amountLoan,
@@ -130,7 +129,7 @@ namespace CrmAppNew.LoanCrm
                     _transactions.Add(new Loan()
                     {
                         Id = Guid.NewGuid(),
-                        Tranche = SetTranche(),
+                        Tranche = CreateTrancheLoans.SetTranche(),
                         UserId = userId,
                         LoanAmount = amountLoan,
                         LoanBalance = amountLoan,

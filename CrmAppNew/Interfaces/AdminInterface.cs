@@ -1,5 +1,5 @@
-﻿using CrmAppNew.AdminCrm;
-using CrmAppNew.DTO;
+﻿using CrmAppNew.Abstracts;
+using CrmAppNew.AdminCrm;
 using CrmAppNew.Enums;
 using CrmAppNew.Model;
 using CrmAppNew.UserCrm;
@@ -8,7 +8,7 @@ namespace CrmAppNew.Interfaces
 {
     public static class AdminInterface
     {
-        static public AdminService adminService = new AdminService(Program._usersList);
+        static public AdminService adminService = new AdminService(Program._usersList, Program._transactions);
         public static void Admin()
         {
             string command = Program.InputCommand();
@@ -30,13 +30,13 @@ namespace CrmAppNew.Interfaces
                     else if (command.ToLower().Equals("delete"))
                         Program.DeleteUser(user.Id, adminService);
                     else if (command.ToLower().Equals("create loan"))
-                        CreateLoan();
+                        RequestLoanUser(adminService);
                     else if (command.ToLower().Equals("check loan"))
-                        CheckLoanAdmin();
+                        ManagerInterface.LoanManagerCheck(adminService);
                     else if (command.ToLower().Equals("change status"))
                         ChangeStatusUser();
                     else if (command.ToLower().Equals("repayment loan"))
-                        RepaymentLoan();
+                        RepaymentLoan(adminService);
                     else if (command.ToLower().Equals("exit"))
                         return;
                     else
@@ -49,30 +49,6 @@ namespace CrmAppNew.Interfaces
                 Console.WriteLine("Команда {command} некорректно");
         }
 
-        public static void CreateLoan()
-        {
-            var result = adminService.GetSpecificUser(Program.LoginInput());
-            if (!result.IsSuccessfully)
-            {
-                Console.WriteLine(result.Message);
-                return;
-            }
-            UserInterface.RequestLoan(result.Payload);
-        }
-        public static void CheckLoanAdmin()
-        {
-            ManagerInterface.LoanManagerCheck();
-        }
-        public static void RepaymentLoan()
-        {
-            var result = adminService.GetSpecificUser(Program.LoginInput());
-            if (!result.IsSuccessfully)
-            {
-                Console.WriteLine(result.Message);
-                return;
-            }
-            UserInterface.RepaymentLoan(result.Payload);
-        }
         public static void ChangeStatusUser()
         {
             var loginInput = Program.LoginInput();
@@ -94,6 +70,28 @@ namespace CrmAppNew.Interfaces
                 return UserStatus.Open;
             else
                 throw new Exception("wrong command");
+        }
+        public static void RequestLoanUser(ILoanService service)
+        {
+            var result = adminService.GetSpecificUser(Program.LoginInput());
+            if (result.IsSuccessfully)
+            {
+                Console.WriteLine(result.Message);
+                LoanInterface.RequestLoan(result.Payload, service);
+            }
+            else
+                throw new Exception(result.Message);
+        }
+        public static void RepaymentLoan(ILoanService service)
+        {
+            var result = adminService.GetSpecificUser(Program.LoginInput());
+            if (result.IsSuccessfully)
+            {
+                Console.WriteLine(result.Message);
+                LoanInterface.RepaymentLoan(result.Payload, service);
+            }
+            else
+                throw new Exception(result.Message);
         }
     }
 }

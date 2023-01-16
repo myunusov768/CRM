@@ -1,10 +1,11 @@
-﻿using CrmAppNew.DTO;
+﻿using CrmAppNew.Abstracts;
+using CrmAppNew.DTO;
 using CrmAppNew.Enums;
 using CrmAppNew.Model;
 
 namespace CrmAppNew.ManagerCrm
 {
-    public sealed class ManagerService: AbstractUser
+    public sealed class ManagerService: AbstractUser, IManagerService
     {
         private readonly List<User> _users;
         private readonly List<Loan> _transactions;
@@ -72,7 +73,7 @@ namespace CrmAppNew.ManagerCrm
                 };
                 return result;
             }
-            else if (user == null)
+            else if (user is null)
             {
                 var result = new Result<bool>()
                 {
@@ -103,7 +104,7 @@ namespace CrmAppNew.ManagerCrm
         public override Result<bool> DeleteUser(Guid userId)
         {
             var user = _users.FirstOrDefault(x => x.Id.Equals(userId));
-            if (user == null)
+            if (user is null)
             {
                 var result = new Result<bool>()
                 {
@@ -125,7 +126,7 @@ namespace CrmAppNew.ManagerCrm
         {
             var manager = _users.FirstOrDefault(x => x.Login.Equals(loginUser) && x.Password.Equals(passwordUser)
             && x.UserRoll.Equals(UserRoll.Moderator));
-            if (manager == null)
+            if (manager is null)
             {
                 var result = new Result<User>()
                 {
@@ -149,7 +150,7 @@ namespace CrmAppNew.ManagerCrm
         public Result<bool> ManagerServiceCheck(Guid id, LoanType checkType, string comment)
         {
             var loan = _transactions.FirstOrDefault(x => x.Id.Equals(id));
-            if (loan == null)
+            if (loan is null)
             {
                 var result = new Result<bool>()
                 {

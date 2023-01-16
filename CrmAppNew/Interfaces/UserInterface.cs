@@ -1,9 +1,6 @@
-﻿using CrmAppNew.DTO;
-using CrmAppNew.LoanCrm;
-using CrmAppNew.Model;
+﻿using CrmAppNew.Model;
 using CrmAppNew.UserCrm;
-using CrmAppNew.Interfaces;
-using System;
+
 
 
 namespace CrmAppNew.Interfaces
@@ -32,11 +29,11 @@ namespace CrmAppNew.Interfaces
                         else if (command.ToLower().Equals("change"))
                             Program.UserDataChange(user.Id, userService);
                         else if (command.ToLower().Equals("create loan"))
-                            RequestLoan(user);
+                            LoanInterface.RequestLoan(user, Program.loanService);
                         else if (command.ToLower().Equals("loans"))
-                            AllLoans(user);
+                            LoanInterface.AllLoans(user, Program.loanService);
                         else if (command.ToLower().Equals("repayment loan"))
-                            RepaymentLoan(user);
+                            LoanInterface.RepaymentLoan(user, Program.loanService);
                         else if (command.ToLower().Equals("messanger"))
                             ChatInterface.UserChat(user);
                         else if (command.ToLower().Equals("delete"))
@@ -52,39 +49,6 @@ namespace CrmAppNew.Interfaces
                 Program.CreateUser(userService);
             else
                 throw new Exception("Команда {command} некорректно");
-        }
-
-        public static void RequestLoan(User user)
-        {
-            Console.WriteLine("Введите сумма кредита!");
-            int amount = int.Parse(Console.ReadLine());
-            var result = Program.loanService.CreateLoan(user.Id, amount);
-            Console.WriteLine(result.Message);
-        }
-        public static void AllLoans(User user)
-        {
-            var loans = Program.loanService.GetAllLoansUser(user.Id);
-            if (!loans.IsSuccessfully)
-                Console.WriteLine(loans.Message);
-            else
-                Console.WriteLine(loans.Payload);
-        }
-        public static void RepaymentLoan(User user)
-        {
-            AllLoans(user);
-            Console.WriteLine("Введите Id транша!");
-            int _id = int.Parse(Console.ReadLine());
-            var loan = Program.loanService.GetSpecificLoan(_id);
-            if (loan.IsSuccessfully)
-            {
-                Console.Write($"Сумма: {loan.Payload.LoanAmount}");
-
-                var result = Program.loanService.RepaymentLoan(_id, Program.AmountInput());
-                Console.WriteLine(result.Message);
-            }
-            else
-                Console.WriteLine("Не правельный транш!");
-            
         }
     }
 }

@@ -1,17 +1,13 @@
-﻿using CrmAppNew.DTO;
+﻿using CrmAppNew.Abstracts;
 using CrmAppNew.Enums;
 using CrmAppNew.ManagerCrm;
-using CrmAppNew.Model;
-using CrmAppNew.ModeratorCrm;
-using System;
-using System.Transactions;
 
 namespace CrmAppNew.Interfaces
 {
     static class ManagerInterface
     {
         static public ManagerService managerService = new ManagerService(Program._usersList, Program._transactions);
-        static void Manager()
+        public static void Manager()
         {
             string command = Program.InputCommand();
             if (command.ToLower().Equals("open"))
@@ -23,7 +19,7 @@ namespace CrmAppNew.Interfaces
                     command = Program.InputCommand();
 
                     if (command.ToLower().Equals("start checking"))
-                        LoanManagerCheck();
+                        LoanManagerCheck(managerService);
                     else if (command.ToLower().Equals("statistic"))
                         CheckingStatistic();
                     else if (command.ToLower().Equals("messanger"))
@@ -43,7 +39,7 @@ namespace CrmAppNew.Interfaces
             else
                 throw new Exception("Команда {command} некорректно");
         }
-        public static void LoanManagerCheck()
+        public static void LoanManagerCheck(IManagerService service)
         {
             foreach (var item in Program._transactions)
             {
@@ -58,9 +54,9 @@ namespace CrmAppNew.Interfaces
                     if(string.IsNullOrEmpty(comment))
                         throw new Exception("Команда {command} некорректно");
                     else if (command.ToLower().Equals("+"))
-                        managerService.ManagerServiceCheck(item.Id, LoanType.Accept, comment);
+                        service.ManagerServiceCheck(item.Id, LoanType.Accept, comment);
                     else if (command.ToLower().Equals("-"))
-                        managerService.ManagerServiceCheck(item.Id, LoanType.NotAccept, comment);
+                        service.ManagerServiceCheck(item.Id, LoanType.NotAccept, comment);
                     else if (command.ToLower().Equals("exit"))
                         break;
                     else
