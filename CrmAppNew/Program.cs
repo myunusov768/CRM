@@ -47,8 +47,6 @@ namespace CrmAppNew
                 }
                 
             }
-            Console.WriteLine("coro sadak");
-            Console.ReadLine();
         }
         
 
