@@ -27,6 +27,12 @@ namespace CrmAppNew.Interfaces
                         Program.DeleteUser(user.Id, moderatorService);
                     else if (command.ToLower().Equals("change"))
                         Program.UserDataChange(user.Id, moderatorService);
+                    else if (command.ToLower().Equals("open card"))
+                        Program.CreateCard(user.Id);
+                    else if (command.ToLower().Equals("get cash"))
+                        Program.GetCash(Program.AmountInput());
+                    else if (command.ToLower().Equals("transfer"))
+                        Program.DoTransfer(Program.AmountInput(), user.Id);
                     else if (command.ToLower().Equals("exit"))
                         return;
                     else

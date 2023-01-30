@@ -10,10 +10,14 @@ namespace CrmAppNew.AdminCrm
     {
         private readonly List<Loan> _transactions;
         private readonly List<User> _users;
-        public AdminService(List<User> users, List<Loan> transactions) { _users = users; _transactions = transactions; }
+        private readonly List<EmployeCompany> _employeeList;
+        public AdminService(List<User> users, List<Loan> transactions, List<EmployeCompany> employeeList)
+        {
+            _users = users; _transactions = transactions; _employeeList = employeeList;
+        }
         public override Result<bool> СreateUser(CreateUserDto createUserDto)
         {
-            var user = _users.FirstOrDefault(x => x.Login != createUserDto.Login && x.Password != createUserDto.Password);
+            var user = _users.FirstOrDefault(x => x.Login == createUserDto.Login && x.Password == createUserDto.Password);
             if (createUserDto is null)
                 return new Result<bool> 
                 { 
@@ -113,14 +117,7 @@ namespace CrmAppNew.AdminCrm
                 if (user.UserRoll.Equals(UserRoll.User) && _users != null)
                     yield return user;
         }
-        /*
- - Добавить Администратору возможность:
- - Редактировать пользователей (всех со всеми ролями).
- - Удалять пользователей (всех со всеми ролями).
- - Блокировать пользователям доступ в СРМ (всех со всеми ролями).
- - Создать долг для определенного пользователя.
- - Подтверждать этот долг.
- - Погошать долги пользователей.*/
+        //------------------------------------------------------------------------------
         public Result<bool> ChangeStatusUser(string login, UserStatus userStatus)
         {
             var user = _users.FirstOrDefault(x => x.Login.Equals(login));
@@ -333,6 +330,87 @@ namespace CrmAppNew.AdminCrm
                 return result;
             }
         }
-    }
 
+
+
+        /*
+ - Добавить возможность администратору: дублировать пользователей, долги.
+ - Добавить Администратору возможность сделать пользователей - сотрудниками. Т.е. нужно так же добавить новую роль - Сотрудник.
+ - Нужно добавить информацию о сотруднике:
+  - Место жительство
+  - Паспортные данные
+  - Оклад
+
+ - Сотрудник может просмотреть все свои данные.
+
+ - Добавить новую роль - Бугалтер (Бугалтер является сотрудником)
+ - Добавить возможность Бугалтеру начислять оклад сотрудникам.
+
+ - Добавить возможность сотруднику запросить Аванас.
+ - Бугалтер может принять и начислить Аванс, или отказать в выдаче аванса.*/
+
+        public Result<bool> DublicateUser(User user, string loginNew, string passwordNew)
+        {
+            var _user = _users.FirstOrDefault(x => x.Login == loginNew && x.Password == passwordNew);
+            if (user is null)
+                return new Result<bool>
+                {
+                    Error = Error.InputParameterIsEmpty,
+                    IsSuccessfully = false,
+                    Message = "The user you want to dublicate is empty!",
+                    Payload = false
+                };
+            else if (_user != null && _user.Login.Equals(user.Login))
+                return new Result<bool>
+                {
+                    Error = Error.ThisLoginIsAlreadyTaken,
+                    IsSuccessfully = false,
+                    Message = "Login is already taken!",
+                    Payload = false
+                };
+            _users.Add(new User()
+            {
+                Id = Guid.NewGuid(),
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Middlename = user.Middlename,
+                DateOfBirth = user.DateOfBirth,
+                Login = user.Login,
+                Password = user.Password,
+                UserRoll = UserRoll.Admin,
+                UserStatus = UserStatus.Open
+            });
+            var result = new Result<bool>()
+            { IsSuccessfully = true, Message = "User successfully dublicated!", Payload = true };
+            return result;
+        }
+
+        public Result<bool> DuplicateLoan(Guid userId, int amountLoan)
+        {
+            var user = _transactions.FirstOrDefault(x => x.UserId.Equals(userId));
+            
+            if (amountLoan <= 0)
+            {
+                var result1 = new Result<bool>()
+                { Error = Error.AmountZeroOrLessThanZero, IsSuccessfully = false, Message = "Loan amount is null!", Payload = false };
+                return result1;
+            }
+            _transactions.Add(new Loan()
+            {
+                Id = Guid.NewGuid(),
+                Tranche = CreateTrancheLoans.SetTranche(),
+                UserId = userId,
+                LoanAmount = amountLoan,
+                LoanBalance = amountLoan,
+                LoanType = LoanType.Pending,
+                DateLoan = DateTime.Now,
+                RepaymentDate = DateTime.Now.AddMonths(1),
+                LoanStatus = LoanStatus.open
+            });
+            var result = new Result<bool>()
+            { IsSuccessfully = true, Message = "Ok", Payload = true };
+            return result;
+        }
+
+    }
 }

@@ -8,6 +8,7 @@ namespace CrmAppNew.Enums
         Admin,
         Guest,
         Moderator,
-        Manager
+        Manager,
+        Employee
     }
 }

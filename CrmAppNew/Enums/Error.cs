@@ -17,6 +17,7 @@ namespace CrmAppNew.Enums
         AmountZeroOrLessThanZero,
         LimitExhausted,
         IncomingIdIsEmpty,
-        OtherErrors
+        OtherErrors,
+        AdvancePaymentMoreThanSalary
     }
 }

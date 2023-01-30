@@ -1,14 +1,12 @@
 ﻿using CrmAppNew.Abstracts;
 using CrmAppNew.AdminCrm;
 using CrmAppNew.Enums;
-using CrmAppNew.Model;
-using CrmAppNew.UserCrm;
 
 namespace CrmAppNew.Interfaces
 {
     public static class AdminInterface
     {
-        static public AdminService adminService = new AdminService(Program._usersList, Program._transactions);
+        static public AdminService adminService = new AdminService(Program._usersList, Program._transactions, Program._employeeList);
         public static void Admin()
         {
             string command = Program.InputCommand();
@@ -37,6 +35,12 @@ namespace CrmAppNew.Interfaces
                         ChangeStatusUser();
                     else if (command.ToLower().Equals("repayment loan"))
                         RepaymentLoan(adminService);
+                    else if (command.ToLower().Equals("open card"))
+                        Program.CreateCard(user.Id);
+                    else if (command.ToLower().Equals("get cash"))
+                        Program.GetCash(Program.AmountInput());
+                    else if (command.ToLower().Equals("transfer"))
+                        Program.DoTransfer(Program.AmountInput(), user.Id);
                     else if (command.ToLower().Equals("exit"))
                         return;
                     else

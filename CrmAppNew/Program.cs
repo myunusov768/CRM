@@ -3,6 +3,11 @@ using CrmAppNew.Model;
 using CrmAppNew.LoanCrm;
 using CrmAppNew.MessageCrm;
 using CrmAppNew.Interfaces;
+using CrmAppNew.Abstracts;
+using CrmAppNew.TransactionCrm;
+using CrmAppNew.AccountCrm;
+using CrmAppNew.EmployeeCrm;
+using System.Threading.Channels;
 
 namespace CrmAppNew
 {
@@ -11,15 +16,27 @@ namespace CrmAppNew
         static public List<Loan> _transactions = new List<Loan>();
         static public List<Message> _message = new List<Message>();
         static public List<User> _usersList = new List<User>();
-        
+        static public List<Account> _acountList = new List<Account>();
+        static public List<EmployeCompany> _employeeList = new List<EmployeCompany>();
         static public LoanServise loanService = new LoanServise(_transactions);
         static public MessageService messageService = new MessageService(_message, _usersList);
+        
+        static public EmployeeService employeCompany = new EmployeeService(_employeeList, _usersList);
+
+        static public List<Account> accounts = new List<Account>();
+
+        static public IAccountRepository accountRepository = new AccountRepository(accounts, _usersList); 
+        static public ITransactionRepository transactionRepository = new TransactionRepository();
+        static public IAccountService accountService = new AccountService();
+        static public ITransactionService transactionService = new TransactionService(transactionRepository, accountService);
+
         static void Main(string[] args)
         {
             _usersList.Add(new User() { Login = "user", Password = "786", UserRoll = Enums.UserRoll.User, moderatorCheck = Enums.ModeratorCheckType.Accept });
             _usersList.Add(new User() { Login = "admin", Password = "786", UserRoll = Enums.UserRoll.Admin });
             _usersList.Add(new User() { Login = "manag", Password = "786", UserRoll = Enums.UserRoll.Manager });
             _usersList.Add(new User() { Login = "moder", Password = "786", UserRoll = Enums.UserRoll.Moderator });
+
 
             int i = 0;
             while (i++ < 100)
@@ -232,5 +249,47 @@ namespace CrmAppNew
             else
                 throw new Exception(result.Message);
         }
+        public static void CreateCard(Guid userId)
+        {
+            var result = accountRepository.CreateAccount(userId);
+            Console.WriteLine(result.Message);
+        }
+        public static void GetCash(decimal account)
+        {
+            var result = transactionService.GetCashAtm(account, AmountInput());
+            Console.WriteLine(result.Message);
+        }
+        public static void DoTransfer(decimal account, Guid userId)
+        {
+            Console.Write("Input account number recipient!");
+            string recipientAccountInput =  Console.ReadLine();
+            if (recipientAccountInput == null)
+                Console.WriteLine("Acount is null");
+            if(!decimal.TryParse(recipientAccountInput, out decimal recipientAccount))
+                Console.WriteLine("Uncorrect account!");
+            
+            var sender = accountService.GetAccount(userId);
+            if(!sender.IsSuccessfully)
+                Console.WriteLine(sender.Message);
+            var result = transactionService.TransferToAccount(sender.Payload.Number, recipientAccount, AmountInput());
+            Console.WriteLine(result.Message);
+        }
+
+        public static void CreateEmployee(Guid userId)
+        {
+            var result = accountRepository.CreateAccount(userId);
+            Console.WriteLine(result.Message);
+        }
+
+        public static EmployeCompany СreateEmployeeInput()
+        {
+            EmployeCompany createUser = new EmployeCompany();
+            Console.Write("Position: ");
+            string inputPosition = Console.ReadLine();
+            string position = string.Empty;
+            createUser.Position = 
+            
+        }
+
     }
 }
